@@ -11,11 +11,17 @@ This plugin:
 * Adds a "KIN" currency to the store
 * Adds a new payment gateway provided by https://perk.exchange
 
+## Order Flow
+
+* Customers are redirected to Perk.Exchange to pay for an order using KIN
+* Once the order is paid the user is redirected back to the store
+* The store backend is notified the order was paid. The order is marked 'Completed' automatically
+
 ## Requirements
 
-1. Install the plugin
-2. Setup your site to use the KIN currency
-3. Configure the plugin
+1. WooCommerce is installed.
+2. Latest release of the Perk.Exchange plugin ZIP
+3. Your site is setup to use the KIN currency. This currency is available after the plugin is installed.
 
 ## Configuration
 
@@ -30,5 +36,7 @@ This plugin:
 
 Some stores may not receive the IPN update from Perk.Exchange that an order was paid. This is likely to be due to:
 
-1. **Store is not Internet accessible** or not accessible to https://perk.exchange
-2. **Inbound API calls are not allowed** Try going, on the Admin Panel, to Settings -> Permalinks. On Default Settings radio group, select the "Post name" one. Save the changes. Refer to https://stackoverflow.com/questions/22710078/woocommerce-rest-api-404-error for more information.
+1. **Inbound API calls are not allowed**
+* Try going, on the Admin Panel, to Settings -> Permalinks. On Default Settings radio group, select the "Post name" one. Save the changes. Refer to https://stackoverflow.com/questions/22710078/woocommerce-rest-api-404-error for more information.
+2. **Store is not Internet accessible** or not accessible to https://perk.exchange 
+* Make the store reachable to The Internet or manually mark orders as completed.
