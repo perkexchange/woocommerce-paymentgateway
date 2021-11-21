@@ -24,6 +24,7 @@ This plugin:
 3. Update the **Title**, **Description**, and **Instructions** to your needs
 4. Provide your **Solana wallet** address that contains a KIN token.
 5. Enter your campaign **Secret** from Perk.Exchange. 
+6. Click **Save Changes**
 
 ## Troubleshooting
 
