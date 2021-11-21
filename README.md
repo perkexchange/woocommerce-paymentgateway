@@ -23,6 +23,13 @@ This plugin:
 2. Latest release of the Perk.Exchange plugin ZIP
 3. Your site is setup to use the KIN currency. This currency is available after the plugin is installed.
 
+## Installation
+
+1. Go to https://github.com/perkexchange/woocommerce-paymentgateway/releases and download the latest release of the plugin
+2. Navigate to Plugins >> Add New >> Upload plugin
+3. Select the ZIP file from Step 1.
+4. Click **Install Now**
+
 ## Configuration
 
 1. Go to WooCommerce >> Settings >> Payments
