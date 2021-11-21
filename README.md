@@ -30,5 +30,5 @@ This plugin:
 
 Some stores may not receive the IPN update from Perk.Exchange that an order was paid. This is likely to be due to:
 
-1. The store is not hosted on The Internet or not accessible to https://perk.exchange
-2. Inbound API calls are not allowed. Try going, on the Admin Panel, to Settings -> Permalinks. On Default Settings radio group, select the "Post name" one. Save the changes. Refer to https://stackoverflow.com/questions/22710078/woocommerce-rest-api-404-error for more information.
+1. **Store is not Internet accessible** or not accessible to https://perk.exchange
+2. **Inbound API calls are not allowed** Try going, on the Admin Panel, to Settings -> Permalinks. On Default Settings radio group, select the "Post name" one. Save the changes. Refer to https://stackoverflow.com/questions/22710078/woocommerce-rest-api-404-error for more information.
