@@ -390,6 +390,7 @@ function wc_perkexchange_gateway_init()
         "amount" => $order->get_total(),
         "order_id" => "" . $order_id . "",
         "currency" => "KIN",
+        "memo" => "Order " . $order_id . " from " . site_url(""),
         "recipient_address" => $this->solana_wallet,
         "ipn_callback" => site_url(
           "/wc-api/perkexchange_webhook/?id=" . $order_id
@@ -421,6 +422,8 @@ function wc_perkexchange_gateway_init()
       }
 
       $body = json_decode(wp_remote_retrieve_body($response));
+
+      $order->add_order_note("Customer redirected to " . $body->payment_url);
 
       // Return payment page redirect
       return [
