@@ -156,10 +156,7 @@ function wc_perkexchange_gateway_init()
         "enabled" => [
           "title" => __("Enable/Disable", "wc-gateway-perkexchange"),
           "type" => "checkbox",
-          "label" => __(
-            "Enable Perk.Exchange Payment",
-            "wc-gateway-perkexchange"
-          ),
+          "label" => __("Enable Perk.Exchange", "wc-gateway-perkexchange"),
           "default" => "yes",
         ],
 
@@ -168,9 +165,9 @@ function wc_perkexchange_gateway_init()
           "type" => "text",
           "description" => __(
             "This controls the title for the payment method the customer sees during checkout.",
-            "wc-gateway-offline"
+            "wc-perkexchange"
           ),
-          "default" => __("Perk.Exchange Payment", "wc-gateway-perkexchange"),
+          "default" => __("Perk.Exchange", "wc-gateway-perkexchange"),
           "desc_tip" => true,
         ],
 
@@ -314,6 +311,15 @@ function wc_perkexchange_gateway_init()
      */
     public function perkexchange_webhook()
     {
+      $order = wc_get_order($_GET["id"]);
+      if (!$order) {
+        return false;
+      }
+
+      if ($order->get_status() == "completed") {
+        return true;
+      }
+
       $response = wp_remote_get(
         $this->host . "/api/invoices?order_id=" . $_GET["id"],
         [
@@ -350,7 +356,10 @@ function wc_perkexchange_gateway_init()
         return false;
       }
 
-      $order = wc_get_order($_GET["id"]);
+      $order->add_order_note(
+        "Paid via transaction: https://solscan.io/tx/" .
+          $body->invoices[0]->transaction
+      );
 
       // Mark as completed
       $order->update_status("completed");
@@ -409,11 +418,6 @@ function wc_perkexchange_gateway_init()
             $_GET["id"],
           "error"
         );
-
-        return [
-          "result" => "error",
-          "redirect" => "http://google.ca",
-        ];
       }
 
       $body = json_decode(wp_remote_retrieve_body($response));
