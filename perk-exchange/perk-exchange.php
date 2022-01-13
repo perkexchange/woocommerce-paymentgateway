@@ -1,9 +1,15 @@
 <?php
 /**
  * Plugin Name: Perk.Exchange Payment Gateway
- * Plugin URI: https://perk.exchange
- * Description: Allows payments through Perk.Exchange
+ * Plugin URI: https://github.com/perkexchange/woocommerce-paymentgateway
+ * Description: Allows KIN cryptocurrency payments through Perk.Exchange
  * Author URI: https://perk.exchange
+ * Version:           v0.2.2
+ * Requires at least: 5.2
+ * Requires PHP:      7.2
+ * License:           MIT
+ * License URI:       https://github.com/perkexchange/woocommerce-paymentgateway/blob/main/LICENSE
+ * Text Domain:       perkexchange-woocommerce-plugin
  */
 
 defined("ABSPATH") or exit();
