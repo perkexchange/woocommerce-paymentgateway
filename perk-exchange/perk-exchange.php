@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/perkexchange/woocommerce-paymentgateway
  * Description: Allows KIN cryptocurrency payments through Perk.Exchange
  * Author URI: https://perk.exchange
- * Version:           v0.2.2
+ * Version:           1.0.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * License:           MIT
