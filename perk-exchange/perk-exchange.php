@@ -3,6 +3,7 @@
  * Plugin Name: Perk.Exchange Payment Gateway
  * Plugin URI: https://github.com/perkexchange/woocommerce-paymentgateway
  * Description: Allows KIN cryptocurrency payments through Perk.Exchange
+ * Author: Perk.Exchange
  * Author URI: https://perk.exchange
  * Version:           1.0.0
  * Requires at least: 5.2
@@ -27,17 +28,22 @@ if (
 /**
  * Custom currency and currency symbol
  */
-add_filter("woocommerce_currencies", "add_kin_currency");
+add_filter("woocommerce_currencies", "wc_perkexchange_add_kin_currency");
 
-function add_kin_currency($currencies)
+function wc_perkexchange_add_kin_currency($currencies)
 {
   $currencies["KIN"] = __("KIN", "KIN");
   return $currencies;
 }
 
-add_filter("woocommerce_currency_symbol", "add_kin_currency_symbol", 10, 2);
+add_filter(
+  "woocommerce_currency_symbol",
+  "wc_perkexchange_add_kin_currency_symbol",
+  10,
+  2
+);
 
-function add_kin_currency_symbol($currency_symbol, $currency)
+function wc_perkexchange_add_kin_currency_symbol($currency_symbol, $currency)
 {
   switch ($currency) {
     case "KIN":
@@ -129,25 +135,28 @@ function wc_perkexchange_gateway_init()
         $this->description
       );
 
-      $this->solana_wallet = $this->get_option("solana_wallet");
+      $this->solana_wallet = trim($this->get_option("solana_wallet"));
       $this->campaign_secret = $this->get_option("campaign_secret");
       $this->host = $this->get_option("host");
 
       // Actions
-      add_action("woocommerce_api_perkexchange_webhook", [
+      add_action("woocommerce_api_wc_perkexchange_webhook", [
         $this,
-        "perkexchange_webhook",
+        "wc_perkexchange_webhook",
       ]);
       add_action("woocommerce_update_options_payment_gateways_" . $this->id, [
         $this,
         "process_admin_options",
       ]);
-      add_action("woocommerce_thankyou_" . $this->id, [$this, "thankyou_page"]);
+      add_action("woocommerce_thankyou_" . $this->id, [
+        $this,
+        "wc_perkexchange_thankyou_page",
+      ]);
 
       // Customer Emails
       add_action(
         "woocommerce_email_before_order_table",
-        [$this, "email_instructions"],
+        [$this, "wc_perkexchange_email_instructions"],
         10,
         3
       );
@@ -192,10 +201,6 @@ function wc_perkexchange_gateway_init()
           "title" => __("Solana Wallet", "wc-gateway-perkexchange"),
           "type" => "text",
           "label" => __("Solana Wallet", "wc-gateway-perkexchange"),
-          "default" => __(
-            "H7q8zE2gXsWqraa6UCCLCk31zpFwjigMxBfxNDz3gW6c",
-            "wc-gateway-perkexchange"
-          ),
           "description" => __(
             "The Solana wallet to accept payments",
             "wc-gateway-perkexchange"
@@ -235,35 +240,45 @@ function wc_perkexchange_gateway_init()
       ]);
     }
 
-    function is_valid_for_use()
+    function wc_perkexchange_is_valid_for_use()
     {
       return in_array(get_woocommerce_currency(), $this->allowedCurrencies);
     }
 
     function admin_options()
     {
-      if (!$this->valid_campaign_secret_field()) { ?>
+      if (!$this->wc_perkexchange_valid_campaign_secret_field()) { ?>
                 <div class="notice error is-dismissible" >
                     <p><?php _e(
                       "Campaign secret is not valid",
-                      "my-text-domain"
+                      "wc-gateway-perkexchange"
                     ); ?></p>
                 </div>
             <?php }
-      if (!$this->is_valid_for_use()) { ?>
+      if (!$this->wc_perkexchange_valid_solana_wallet()) { ?>
+                <div class="notice error is-dismissible" >
+                 <p><?php _e(
+                   "Please enter a valid Solana wallet",
+                   "wc-gateway-perkexchange"
+                 ); ?></p>
+                </div>
+            <?php }
+      if (!$this->wc_perkexchange_is_valid_for_use()) { ?>
                 <div class="notice error is-dismissible" >
                  <p><?php _e(
                    "Perk.Exchange does not support the selected currency " .
-                     get_woocommerce_currency() .
-                     "!",
-                   "my-text-domain"
+                     get_woocommerce_currency(),
+                   "wc-gateway-perkexchange"
                  ); ?></p>
                 </div>
             <?php }
       parent::admin_options();
     }
-
-    function valid_campaign_secret_field()
+    function wc_perkexchange_valid_solana_wallet()
+    {
+      return $this->solana_wallet != "";
+    }
+    function wc_perkexchange_valid_campaign_secret_field()
     {
       $response = wp_remote_get($this->host . "/api/invoices", [
         "timeout" => 45,
@@ -282,10 +297,10 @@ function wc_perkexchange_gateway_init()
     /**
      * Output for the order received page.
      */
-    public function thankyou_page()
+    public function wc_perkexchange_thankyou_page()
     {
       if ($this->instructions) {
-        echo wpautop(wptexturize($this->instructions));
+        echo wpautop(esc_html__(wptexturize($this->instructions)));
       }
     }
 
@@ -297,7 +312,7 @@ function wc_perkexchange_gateway_init()
      * @param bool $sent_to_admin
      * @param bool $plain_text
      */
-    public function email_instructions(
+    public function wc_perkexchange_email_instructions(
       $order,
       $sent_to_admin,
       $plain_text = false
@@ -308,16 +323,22 @@ function wc_perkexchange_gateway_init()
         $this->id === $order->payment_method &&
         $order->has_status("on-hold")
       ) {
-        echo wpautop(wptexturize($this->instructions)) . PHP_EOL;
+        echo esc_html__(wpautop(wptexturize($this->instructions))) . PHP_EOL;
       }
     }
 
     /**
      *
      */
-    public function perkexchange_webhook()
+    public function wc_perkexchange_webhook()
     {
-      $order = wc_get_order($_GET["id"]);
+      $order_id = (int) wc_clean($_GET["id"]);
+
+      if (!is_int($order_id)) {
+        return false;
+      }
+
+      $order = wc_get_order($order_id);
       if (!$order) {
         return false;
       }
@@ -327,7 +348,7 @@ function wc_perkexchange_gateway_init()
       }
 
       $response = wp_remote_get(
-        $this->host . "/api/invoices?order_id=" . $_GET["id"],
+        $this->host . "/api/invoices?order_id=" . $order_id,
         [
           "timeout" => 45,
           "redirection" => 5,
@@ -342,7 +363,9 @@ function wc_perkexchange_gateway_init()
 
       if (is_wp_error($response)) {
         wc_add_notice(
-          "Could not retrieve payment information for order " . $_GET["id"],
+          esc_html__(
+            "Could not retrieve payment information for order " . $order_id
+          ),
           "error"
         );
         return false; // Bail early
@@ -351,14 +374,17 @@ function wc_perkexchange_gateway_init()
       $body = json_decode(wp_remote_retrieve_body($response));
       if (count($body->invoices) <= 0) {
         wc_add_notice(
-          "No paid invoices found for order " . $_GET["id"],
+          esc_html__("No paid invoices found for order " . $order_id),
           "error"
         );
         return false;
       }
 
       if ($body->invoices[0]->transaction == null) {
-        wc_add_notice("No transaction found for order " . $_GET["id"], "error");
+        wc_add_notice(
+          esc_html__("No transaction found for order " . $order_id),
+          "error"
+        );
         return false;
       }
 
@@ -381,6 +407,10 @@ function wc_perkexchange_gateway_init()
      */
     public function process_payment($order_id)
     {
+      if (!is_int($order_id)) {
+        wc_add_notice("Unexpected order_id", "error");
+        return;
+      }
       $order = wc_get_order($order_id);
 
       // Mark as on-hold (we're awaiting the payment)
@@ -399,7 +429,7 @@ function wc_perkexchange_gateway_init()
         "memo" => "Order " . $order_id . " from " . site_url(""),
         "recipient_address" => $this->solana_wallet,
         "ipn_callback" => site_url(
-          "/wc-api/perkexchange_webhook/?id=" . $order_id
+          "/wc-api/wc_perkexchange_webhook/?id=" . $order_id
         ),
         "paid_url" => $this->get_return_url($order),
       ];
@@ -421,8 +451,10 @@ function wc_perkexchange_gateway_init()
 
       if (is_wp_error($response)) {
         wc_add_notice(
-          "Could not create an invoice on Perk.Exchange for order " .
-            $_GET["id"],
+          esc_html__(
+            "Could not create an invoice on Perk.Exchange for order " .
+              $order_id
+          ),
           "error"
         );
       }
