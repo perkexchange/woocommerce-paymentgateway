@@ -2,8 +2,6 @@
 
 This payment gateway provides [KIN](https://kin.org/) cryptocurrency support to Wordpress sites running Woo Commerce.
 
-NOTE: This is in beta and not ready for production use, yet.
-
 ## Overview
 
 This plugin:
